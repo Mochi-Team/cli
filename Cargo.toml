@@ -1,13 +1,17 @@
 [package]
-name = "daifuku"
+name = "mochi-cli"
 version = "0.0.1"
 edition = "2021"
-authors = [""]
-description = "A CLI tool for managing mochi-based sources."
-# license = "MIT"
+authors = ["ErrorErrorError"]
+description = "A CLI tool for managing mochi-based modules."
+license = "MIT"
+homepage = "https://github.com/Mochi-Team/cli"
+repository = "https://github.com/Mochi-Team/cli"
+keywords = ["cli", "mochi", "parse"]
+categories = ["command-line-utilities"]
 
 [[bin]]
-name = "daifuku"
+name = "mochi-cli"
 path = "src/bin/main.rs"
 
 [lib]
@@ -16,3 +20,10 @@ path = "src/lib/lib.rs"
 
 [dependencies]
 clap = { version = "4.1.14", features = ["derive"] }
+local-ip-address = "0.5.6"
+serde = { version = "1.0.189", features = ["serde_derive"] }
+serde_json = "1.0.1"
+tera = "1.19.1"
+tiny_http = "0.12"
+toml = "0.8.2"
+unicode-xid = "0.2.4"

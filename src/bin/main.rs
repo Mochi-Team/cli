@@ -3,10 +3,11 @@ use api;
 
 #[derive(Parser)]
 #[clap(
-    about = "A CLI tool for managing mochi-based repository and sources",
+    about = "A CLI tool for managing mochi-based repository and modules",
     version,
     author
 )]
+
 struct Cli {
     #[command(subcommand)]
     command: Cmd
@@ -15,30 +16,25 @@ struct Cli {
 #[derive(Subcommand)]
 enum Cmd {
     /// Initialize a new repository or source module.
-    #[command(subcommand)]
-    Init(InitCmd)
-}
+    // TODO: add init
+    // #[command(subcommand)]
+    // Init(api::init::InitCmd),
 
-#[derive(Subcommand)]
-enum InitCmd {
-    /// Create a source module
-    Source
-    // TODO: Add repository template builder support
-    // Repository
+    /// Compile a repository or a module for mochi.
+    #[command(subcommand)]
+    Compile(api::compile::CompileCmd),
+
+    /// Start a webserver to test your repo and modules.
+    #[command(subcommand)]
+    Webserver(api::webserver::WebserverCmd)
 }
 
 fn main() {
     let cli = Cli::parse();
 
     match cli.command {
-        // Initialize
-        Cmd::Init(init_type) => {
-            match init_type {
-                // Initialize source
-                InitCmd::Source => {
-                    api::init::init_source();
-                }
-            }
-        }
+        // Cmd::Init(cmd) => api::init::handle(cmd),
+        Cmd::Webserver(cmd) => api::webserver::handle(cmd),
+        Cmd::Compile(cmd) => api::compile::handle(cmd)
     }
 }
