@@ -17,15 +17,21 @@ struct RepositoryManifest {
 
 #[derive(serde::Deserialize)]
 struct ModuleCargo {
+    mochi: ModuleMochiCargo,
     package: ModulePackageCargo,
+}
+
+#[derive(serde::Deserialize)]
+struct ModuleMochiCargo {
+    name: String,
+    description: Option<String>,
+    icon: Option<String>,
 }
 
 #[derive(serde::Deserialize)]
 struct ModulePackageCargo {
     name: String,
-    description: Option<String>,
-    version: String,
-    icon: Option<String>,
+    version: String
 }
 
 #[derive(serde::Serialize)]
@@ -121,13 +127,6 @@ fn compile_repository() {
             normalized_author,
             module_cargo.package.name.to_lowercase()
         );
-        let module_display_name = module_cargo
-            .package
-            .name
-            .replace("-", " ")
-            .replace("_", " ")
-            .trim()
-            .into();
 
         // TODO: Zip Modules with their resources
 
@@ -149,12 +148,12 @@ fn compile_repository() {
 
         let module_manifest = ModuleManifest {
             id: module_id.clone(),
-            name: module_display_name,
-            description: module_cargo.package.description.map(|f| f.trim().into()),
+            name: module_cargo.mochi.name,
+            description: module_cargo.mochi.description.map(|f| f.trim().into()),
             file: format!("/modules/{}.wasm", &module_id),
             version: module_cargo.package.version,
             meta: vec![],
-            icon: module_cargo.package.icon,
+            icon: module_cargo.mochi.icon,
         };
         releases.modules.push(module_manifest);
     }
