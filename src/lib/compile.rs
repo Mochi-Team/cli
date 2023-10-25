@@ -4,34 +4,55 @@ use tera::{Tera, Context};
 
 #[derive(Subcommand)]
 pub enum CompileCmd {
-    Repository,
-    // Package
+    Repository
 }
+
+#[derive(serde::Deserialize)]
+struct RepositoryCargo {
+    workspace: WorkspaceCargo
+}
+
+#[derive(serde::Deserialize)]
+struct WorkspaceCargo {
+    metadata: WorkspaceMetadataCargo
+}
+
+#[derive(serde::Deserialize)]
+struct WorkspaceMetadataCargo {
+    mochi: RepositoryManifest
+}
+
+#[derive(serde::Deserialize)]
+struct ModuleCargo {
+    package: ModulePackageCargo,
+}
+
+#[derive(serde::Deserialize)]
+struct ModulePackageCargo {
+    metadata: MetadataCargo,
+    name: String,
+    version: String
+}
+
+#[derive(serde::Deserialize)]
+struct MetadataCargo {
+    mochi: MochiCargo
+}
+
+#[derive(serde::Deserialize)]
+struct MochiCargo {
+    name: String,
+    description: Option<String>,
+    icon: Option<String>,
+}
+
+// JSON Serialization
 
 #[derive(serde::Deserialize, serde::Serialize)]
 struct RepositoryManifest {
     name: String,
     author: String,
     description: Option<String>,
-}
-
-#[derive(serde::Deserialize)]
-struct ModuleCargo {
-    mochi: ModuleMochiCargo,
-    package: ModulePackageCargo,
-}
-
-#[derive(serde::Deserialize)]
-struct ModuleMochiCargo {
-    name: String,
-    description: Option<String>,
-    icon: Option<String>,
-}
-
-#[derive(serde::Deserialize)]
-struct ModulePackageCargo {
-    name: String,
-    version: String
 }
 
 #[derive(serde::Serialize)]
@@ -43,6 +64,7 @@ struct ModuleManifest {
     version: String,
     meta: Vec<MetaType>,
     icon: Option<String>,
+    mochi_version: String
 }
 
 #[derive(serde::Serialize)]
@@ -66,13 +88,17 @@ pub fn handle(cmd: CompileCmd) {
 }
 
 fn compile_repository() {
-    Command::new("cargo")
+    let status = Command::new("cargo")
         .arg("build")
         .arg("--release")
         .arg("--target")
         .arg("wasm32-unknown-unknown")
-        .output()
+        .status()
         .expect("failed to build modules");
+
+    if !status.success() {
+        println!("There was an issue compiling modules. {}", status)
+    }
 
     let cwd = std::env::current_dir().expect("failed to get current working directory");
     let target_releases_path = cwd
@@ -80,11 +106,14 @@ fn compile_repository() {
         .join("wasm32-unknown-unknown")
         .join("release");
 
-    let repo_manifest_path = cwd.join("Manifest").with_extension("toml");
-    let repo_manifest = toml::from_str::<RepositoryManifest>(
-        &fs::read_to_string(repo_manifest_path).expect("No `Manifest.toml` found in directory."),
+    let repo_cargo_path = cwd.join("Cargo").with_extension("toml");
+    let repo_manifest = toml::from_str::<RepositoryCargo>(
+        &fs::read_to_string(repo_cargo_path).expect("No `Cargo.toml` found in directory for repository."),
     )
-    .unwrap();
+    .unwrap()
+    .workspace
+    .metadata
+    .mochi;
 
     // Iterate every module and store in dist directory.
 
@@ -148,12 +177,14 @@ fn compile_repository() {
 
         let module_manifest = ModuleManifest {
             id: module_id.clone(),
-            name: module_cargo.mochi.name,
-            description: module_cargo.mochi.description.map(|f| f.trim().into()),
+            name: module_cargo.package.metadata.mochi.name,
+            description: module_cargo.package.metadata.mochi.description.map(|f| f.trim().into()),
             file: format!("/modules/{}.wasm", &module_id),
             version: module_cargo.package.version,
             meta: vec![],
-            icon: module_cargo.mochi.icon,
+            icon: module_cargo.package.metadata.mochi.icon,
+            // TODO: set correct mochi bindings version
+            mochi_version: "0.0.2".into()
         };
         releases.modules.push(module_manifest);
     }
