@@ -6,8 +6,11 @@
 [![Crates.io](https://img.shields.io/crates/d/mochi-cli?style=flat-square)](https://crates.io/crates/mochi-cli)
 [![License](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](LICENSE-MIT)
 [![Contributors](https://img.shields.io/github/contributors/Mochi-Team/cli?style=flat-square)](https://github.com/Mochi-Team/cli/graphs/contributors)
+[![GitHub Workflow Status (Lint)](https://img.shields.io/github/actions/workflow/status/Mochi-Team/cli/lint.yaml?style=flat-square)](https://github.com/Mochi-Team/cli/actions/workflows/lint.yaml)
+[![GitHub Workflow Status (Tests)](https://img.shields.io/github/actions/workflow/status/Mochi-Team/cli/tests.yaml?style=flat-square)](https://github.com/Mochi-Team/cli/actions/workflows/tests.yaml)
 
-Licensed under [MIT](LICENSE)
+## Usage
+**TODO**
 
 ## Installation
 ```
@@ -16,3 +19,6 @@ cargo install mochi-cli
 
 ## Docs
 **TODO**
+
+## License
+Licensed under [MIT](LICENSE)
