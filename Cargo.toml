@@ -19,6 +19,7 @@ name = "api"
 path = "src/lib/lib.rs"
 
 [dependencies]
+anyhow = "1.0.75"
 clap = { version = "4.1.14", features = ["derive"] }
 local-ip-address = "0.5.6"
 serde = { version = "1.0.189", features = ["serde_derive"] }

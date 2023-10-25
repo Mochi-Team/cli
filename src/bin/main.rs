@@ -1,5 +1,5 @@
+use anyhow::Result;
 use clap::{Parser, Subcommand};
-use api;
 
 #[derive(Parser)]
 #[clap(
@@ -10,7 +10,7 @@ use api;
 
 struct Cli {
     #[command(subcommand)]
-    command: Cmd
+    command: Cmd,
 }
 
 #[derive(Subcommand)]
@@ -26,15 +26,15 @@ enum Cmd {
 
     /// Start a webserver to test your repo and modules.
     #[command(subcommand)]
-    Webserver(api::webserver::WebserverCmd)
+    Webserver(api::webserver::WebserverCmd),
 }
 
-fn main() {
+fn main() -> Result<()> {
     let cli = Cli::parse();
 
     match cli.command {
         // Cmd::Init(cmd) => api::init::handle(cmd),
         Cmd::Webserver(cmd) => api::webserver::handle(cmd),
-        Cmd::Compile(cmd) => api::compile::handle(cmd)
+        Cmd::Compile(cmd) => api::compile::handle(cmd),
     }
 }

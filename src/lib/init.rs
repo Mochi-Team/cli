@@ -3,9 +3,8 @@ use clap::Subcommand;
 #[derive(Subcommand)]
 pub enum InitCmd {
     /// Create a module
-    Module
-    // TODO: Add repository builder
-    // Repository
+    Module, // TODO: Add repository builder
+            // Repository
 }
 
 pub fn handle(cmd: InitCmd) {
