@@ -1,44 +1,48 @@
 use anyhow::{Context, Result};
 use local_ip_address::local_ip;
 
-use std::{collections::HashMap, error, ffi::OsStr, fs::File, io, path::PathBuf, str::FromStr};
+use std::{collections::HashMap, ffi::OsStr, fs::File, io, path::PathBuf, str::FromStr};
 
-#[derive(Subcommand)]
-pub enum WebserverCmd {
-    /// Serve
-    Serve(ServeArguments),
-}
+use clap::Parser;
+use tiny_http::{Header, Response, Server, StatusCode};
+
+use super::build;
+
+pub type WebserverCmd = ServeArguments;
 
 #[derive(Parser, Default, Debug)]
 pub struct ServeArguments {
+    // The port to broadcast the repository (default is 10443)
+    #[arg(long, default_value = None)]
     port: Option<usize>,
+
+    // The repository output (default is "dist").
+    #[arg(long, default_value = None)]
+    output: Option<PathBuf>,
 }
-
-use clap::{Parser, Subcommand};
-use tiny_http::{Header, Response, Server, StatusCode};
-
-use crate::compile;
-
-pub type Error = Box<dyn error::Error + Send + Sync + 'static>;
 
 pub fn handle(cmd: WebserverCmd) -> Result<()> {
-    match cmd {
-        WebserverCmd::Serve(args) => start_webserver(args.port),
-    }
+    start_webserver(cmd)
 }
 
-fn start_webserver(port: Option<usize>) -> Result<()> {
+fn start_webserver(cmd: WebserverCmd) -> Result<()> {
     println!("Generating server files...");
 
-    compile::handle(compile::CompileCmd::Repository)?;
+    let dist_path = cmd.output.unwrap_or(
+        std::env::current_dir()
+            .with_context(|| "failed to get current working directory")?
+            .join("dist"),
+    );
+
+    build::handle(build::BuildCmd {
+        path: None,
+        output: Some(dist_path.clone()),
+        site: true,
+    })?;
 
     println!("Starting webserver...");
 
-    let dist_path = std::env::current_dir()
-        .with_context(|| "failed to get current working directory")?
-        .join("dist");
-
-    let port = port.unwrap_or(10443);
+    let port = cmd.port.unwrap_or(10443);
 
     let server = Server::http(format!("{}:{}", "0.0.0.0", port))
         .expect("There was an issue starting local server.");
@@ -77,11 +81,10 @@ fn start_webserver(port: Option<usize>) -> Result<()> {
 
 fn handle_file_response(request: tiny_http::Request, path: &PathBuf) -> Result<(), io::Error> {
     let content_type_by_extension: HashMap<&'static str, &'static str> = [
-        ("html", ""),
+        ("html", "text/plain"),
         ("jpg", "image/jpeg"),
         ("jpeg", "image/jpeg"),
         ("png", "image/png"),
-        ("toml", "application/toml"),
         ("wasm", "application/wasm"),
     ]
     .iter()
