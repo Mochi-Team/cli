@@ -4,6 +4,7 @@ use clap::{Parser, Subcommand};
 mod build;
 mod init;
 mod serve;
+mod shared;
 
 #[derive(Parser)]
 #[clap(about, author, version)]

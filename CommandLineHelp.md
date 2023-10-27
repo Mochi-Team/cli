@@ -33,20 +33,34 @@ Initializes a repository or module
 
 ###### **Subcommands:**
 
-* `module` — 
-* `repository` — 
+* `module` — Creates a module from a template
+* `repository` — Creates a repository from a template
 
 
 
 ## `mochi-cli init module`
 
-**Usage:** `mochi-cli init module`
+Creates a module from a template
+
+**Usage:** `mochi-cli init module --name <NAME>`
+
+###### **Options:**
+
+* `-n`, `--name <NAME>` — Display name for the module
 
 
 
 ## `mochi-cli init repository`
 
-**Usage:** `mochi-cli init repository`
+Creates a repository from a template
+
+**Usage:** `mochi-cli init repository [OPTIONS] --name <NAME> --author <AUTHOR>`
+
+###### **Options:**
+
+* `--name <NAME>` — Display name for the repository
+* `--author <AUTHOR>` — Author of the repository
+* `--output <OUTPUT>` — Output path to the repository. By default it uses the cwd + `/repository-name/`
 
 
 
@@ -58,7 +72,7 @@ Builds repository from modules
 
 ###### **Options:**
 
-* `--path <PATH>` — Path of workspace. (Defaults to current working directory)
+* `--path <PATH>` — Path of workspace
 * `--output <OUTPUT>` — Output path for generated repository. For more info use `--help`
 * `-s`, `--site` — Include generated static site for repository
 
@@ -74,8 +88,8 @@ Builds repository and starts a local server
 
 ###### **Options:**
 
-* `--port <PORT>`
-* `--output <OUTPUT>`
+* `--port <PORT>` — The port to broadcast the repository (default is 10443)
+* `--output <OUTPUT>` — The repository output (default is "dist")
 
 
 

@@ -12,11 +12,11 @@ pub type WebserverCmd = ServeArguments;
 
 #[derive(Parser, Default, Debug)]
 pub struct ServeArguments {
-    // The port to broadcast the repository (default is 10443)
+    /// The port to broadcast the repository (default is 10443)
     #[arg(long, default_value = None)]
     port: Option<usize>,
 
-    // The repository output (default is "dist").
+    /// The repository output (default is "dist").
     #[arg(long, default_value = None)]
     output: Option<PathBuf>,
 }

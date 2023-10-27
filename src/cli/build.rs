@@ -12,6 +12,7 @@ pub type BuildCmd = BuildArgs;
 #[derive(Parser, Default)]
 pub struct BuildArgs {
     /// Path of workspace.
+    ///
     /// (Defaults to current working directory)
     #[arg(long)]
     pub path: Option<PathBuf>,
@@ -27,32 +28,6 @@ pub struct BuildArgs {
     /// This creates an `index.html` on the `output` path or cwd + `/dist/` if argument is present.
     #[arg(short, long, default_value_t = false)]
     pub site: bool,
-}
-
-#[derive(serde::Deserialize)]
-struct RepositoryCargo {
-    workspace: WorkspaceCargo,
-}
-
-#[derive(serde::Deserialize)]
-struct WorkspaceCargo {
-    metadata: WorkspaceMetadataCargo,
-    dependencies: WorkspaceDependenciesCargo,
-}
-
-#[derive(serde::Deserialize)]
-struct WorkspaceDependenciesCargo {
-    mochi: MochiDependencyCargo,
-}
-
-#[derive(serde::Deserialize)]
-struct MochiDependencyCargo {
-    version: String,
-}
-
-#[derive(serde::Deserialize)]
-struct WorkspaceMetadataCargo {
-    mochi: RepositoryManifest,
 }
 
 #[derive(serde::Deserialize)]
@@ -79,15 +54,6 @@ struct MochiCargo {
     icon: Option<String>,
 }
 
-// JSON Serialization
-
-#[derive(serde::Deserialize, serde::Serialize)]
-struct RepositoryManifest {
-    name: String,
-    author: String,
-    description: Option<String>,
-}
-
 #[derive(serde::Serialize)]
 struct ModuleManifest {
     id: String,
@@ -103,7 +69,7 @@ struct ModuleManifest {
 
 #[derive(serde::Serialize)]
 struct RepositoryReleaseManifest {
-    repository: RepositoryManifest,
+    repository: super::shared::RepositoryManifest,
     modules: Vec<ModuleManifest>,
 }
 
@@ -120,7 +86,7 @@ pub fn handle(cmd: BuildCmd) -> Result<()> {
 }
 
 fn compile_repository(args: BuildArgs) -> Result<()> {
-    let (workspace_dir, workspace_cargo) = validate_workspace(args.path)?;
+    let (workspace_dir, workspace_cargo) = super::shared::validate_workspace(args.path)?;
 
     execute_builds(&workspace_dir)?;
 
@@ -239,27 +205,6 @@ fn compile_repository(args: BuildArgs) -> Result<()> {
 
     println!("Successfully packaged server!");
     Ok(())
-}
-
-fn validate_workspace(path: Option<PathBuf>) -> Result<(PathBuf, RepositoryCargo)> {
-    let workspace_directory = path.unwrap_or(
-        std::env::current_dir().with_context(|| "failed to get current working directory")?,
-    );
-
-    if !workspace_directory.is_dir() {
-        bail!(format!(
-            "{} is not a valid directory.",
-            workspace_directory.to_str().unwrap_or_default()
-        ));
-    }
-
-    let repo_cargo_path = workspace_directory.join("Cargo").with_extension("toml");
-    toml::from_str::<RepositoryCargo>(
-        &fs::read_to_string(repo_cargo_path)
-            .with_context(|| "No `Cargo.toml` found in repository's workspace.")?,
-    )
-    .with_context(|| "Failed to deserialize Repository's `Cargo.toml` metadata info.")
-    .map(|v| (workspace_directory, v))
 }
 
 fn execute_builds(dir: &Path) -> Result<()> {
