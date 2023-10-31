@@ -1,0 +1,30 @@
+{
+  "name": "@mochi/cli",
+  "version": "0.0.1",
+  "description": "A cli tool used to build and bundle Mochi modules.",
+  "keywords": [
+    "cli"
+  ],
+  "repository": "https://github.com/Mochi-Team/@mochi/cli",
+  "homepage": "https://github.com/Mochi-Team/@mochi/cli",
+  "main": "dist/index.js",
+  "bin": {
+    "mochi-cli": "dist/index.js"
+  },
+  "devDependencies": {
+    "@commander-js/extra-typings": "^11.1.0",
+    "@types/node": "^20.8.9"
+  },
+  "dependencies": {
+    "@types/ejs": "^3.1.4",
+    "commander": "^11.1.0",
+    "consola": "^3.2.3",
+    "ejs": "^3.1.9",
+    "esbuild": "^0.19.5",
+    "json5": "^2.2.3",
+    "typescript": "^5.2.2"
+  },
+  "scripts": {
+    "build": "tsc && cp -r src/templates dist/src"
+  }
+}
