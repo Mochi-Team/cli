@@ -1,11 +1,9 @@
-export default async function handleServe(src?: string, dest?: string, site: boolean = false) {
-    if (src == undefined) {
-        src = process.cwd();
-    }
+import { consola } from 'consola';
+import path from 'path';
 
-    if (dest == undefined) {
-        dest = src + '/dist';
-    }
+export default async function handleServe(src: string, dest: string, site: boolean, watch: boolean) {
+  src = path.resolve(process.cwd(), src);
+  dest = path.resolve(process.cwd(), dest);
 
-    console.log("serve w/ source: " + src + ', dest: ' + dest);
+  consola.info(`serve w/ source: ${src}, dest: ${dest}, site: ${site}, watch: ${watch}`);
 }

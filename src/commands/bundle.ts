@@ -1,112 +1,115 @@
 import * as path from 'path';
 import vm from 'vm';
 import { consola } from 'consola';
-import handleBuild from './check';
+import hanldeCheck from './check';
 import esbuild from 'esbuild';
 import { getModulesDirectories, retrieveMochiJSVersion } from '../utils';
 import { rm, readFile, writeFile } from 'fs/promises';
 import * as ejs from 'ejs';
 
-export default async function handleBundle(src?: string, dest?: string, site: boolean = false) {
-    src = src ?? process.cwd();
-    dest = dest ?? path.join(src, 'dist');
+export default async function handleBundle(src: string, dest: string, site: boolean) {
+  src = path.resolve(process.cwd(), src);
+  dest = path.resolve(process.cwd(), dest);
 
-    const DEST_MODULES_PATH = path.join(dest, 'modules');
+  const DEST_MODULES_PATH = path.join(dest, 'modules');
 
-    await handleBuild(src);
+  await hanldeCheck(src);
 
-    // Retrieve @mochi/js version from node_modules.
+  // Retrieve @mochi/js version from node_modules.
 
-    let mochiJSVersion: string = await retrieveMochiJSVersion(src);
+  const mochiJSVersion: string = await retrieveMochiJSVersion(src);
 
-    // delete old modules in dest if present
+  // delete old modules in dest if present
 
-    await rm(DEST_MODULES_PATH, { recursive: true, force: true });
+  await rm(DEST_MODULES_PATH, { recursive: true, force: true });
 
-    const modulesDirs = await getModulesDirectories(src, false);
+  const modulesDirs = await getModulesDirectories(src, false);
 
-    const entryPoints = modulesDirs.map(d => {
-        return {
-            in: path.join(d.path, d.name, 'index.ts'),
-            out: d.name
-        }
-    });
-
-    const repositoryPoint = {
-        in: path.join(src, 'index.ts'),
-        out: '__repository'
+  const entryPoints = modulesDirs.map((d) => {
+    return {
+      in: path.join(d.path, d.name, 'index.ts'),
+      out: d.name,
     };
+  });
 
-    consola.start('Starting bundling repository...\n');
+  const repositoryPoint = {
+    in: path.join(src, 'index.ts'),
+    out: '__repository',
+  };
 
-    // generate bundled files
+  consola.log('');
+  consola.start('Starting bundling repository...');
 
-    await esbuild.build({
-        entryPoints: entryPoints.concat([repositoryPoint]),
-        bundle: true,
-        globalName: 'source',
-        outdir: DEST_MODULES_PATH
-    });
+  // generate bundled files
 
-    // Read repository.js metadata
+  await esbuild.build({
+    entryPoints: entryPoints.concat([repositoryPoint]),
+    bundle: true,
+    globalName: 'source',
+    outdir: DEST_MODULES_PATH,
+  });
 
-    const repoIndexJSPath = path.join(DEST_MODULES_PATH, `${repositoryPoint.out}.js`);
+  // Read repository.js metadata
 
-    const metadata = await readFile(repoIndexJSPath)
-        .then(f => vm.runInNewContext(`${f}; source.default`))
-        .then(v => {
-            if (v) return v;
-            throw new Error(`${path.join(src!, 'index.ts')} does not have repository metadata exported as default.`)
-        })
-        .finally(async () => await rm(repoIndexJSPath, { force: true }));
+  const repoIndexJSPath = path.join(DEST_MODULES_PATH, `${repositoryPoint.out}.js`);
 
-    // Load js files and gather module's metadata
+  const metadata = await readFile(repoIndexJSPath)
+    .then((f) => vm.runInNewContext(`${f}; source.default`))
+    .then((v) => {
+      if (v) return v;
+      throw new Error(`${path.join(src!, 'index.ts')} does not have repository metadata exported as default.`);
+    })
+    .finally(async () => await rm(repoIndexJSPath, { force: true }));
 
-    const releases: any[] = [];
+  // Load js files and gather module's metadata
 
-    let compiledSourcesString = await Promise.all(
-        entryPoints
-        .map(o => readFile(path.join(DEST_MODULES_PATH, `${o.out}.js`), { encoding: 'utf-8' })
-                .then(js => [o, js] as [{ in: string, out: string }, string])
-            )
-    );
+  const releases: any[] = [];
 
-    compiledSourcesString.forEach(o => {
-        const moduleMetadata = vm.runInNewContext(`${o[1]}; new source.default().metadata`);
-        if (moduleMetadata) {
-            moduleMetadata.id = `${toKebabCase(moduleMetadata.name)}`;
-            moduleMetadata.file = `/modules/${o[0].out}.js`;
-            moduleMetadata.meta = []; // TODO: gather if it has video, image, or source
-            moduleMetadata.mochiJSVersion = mochiJSVersion;
-            releases.push(moduleMetadata);    
-        } else {
-            throw new Error(`failed to retrieve metadata content for ${o[0].in}`);
-        }
-    });
+  const compiledSourcesString = await Promise.all(
+    entryPoints.map((o) =>
+      readFile(path.join(DEST_MODULES_PATH, `${o.out}.js`), { encoding: 'utf-8' }).then(
+        (js) => [o, js] as [{ in: string; out: string }, string],
+      ),
+    ),
+  );
 
-    const manifest = {
-        modules: releases,
-        repository: metadata
+  compiledSourcesString.forEach((o) => {
+    const moduleMetadata = vm.runInNewContext(`${o[1]}; new source.default().metadata`);
+    if (moduleMetadata) {
+      moduleMetadata.id = `${toKebabCase(moduleMetadata.name)}`;
+      moduleMetadata.file = `/modules/${o[0].out}.js`;
+      moduleMetadata.meta = []; // TODO: gather if it has video, image, or source
+      moduleMetadata.mochiJSVersion = mochiJSVersion;
+      releases.push(moduleMetadata);
+    } else {
+      throw new Error(`failed to retrieve metadata content for ${o[0].in}`);
     }
+  });
 
-    await writeFile(path.join(dest, 'Manifest.json'), JSON.stringify(manifest))
+  const manifest = {
+    modules: releases,
+    repository: metadata,
+  };
 
-    consola.success(`Successfully bundled repository as ${dest}\n`);
+  await writeFile(path.join(dest, 'Manifest.json'), JSON.stringify(manifest));
 
-    if (site) {
-        consola.start(`Generating site for repository...`);
-        const template = await readFile(path.resolve(__dirname, '..', 'templates/site/index.ejs'), { encoding: 'utf-8' });
-        let output = await ejs.render(template, manifest, { async: true });
+  consola.success(`Successfully bundled repository as ${dest}`);
 
-        await writeFile(path.join(dest, 'index.html'), output);
+  if (site) {
+    consola.log('');
+    consola.start(`Generating site for repository...`);
+    const template = await readFile(path.resolve(__dirname, '..', 'templates/site/index.ejs'), { encoding: 'utf-8' });
+    const output = await ejs.render(template, manifest, { async: true });
 
-        consola.start(`Successfully generated site!`);
-    }
+    await writeFile(path.join(dest, 'index.html'), output);
+
+    consola.success(`Successfully generated site!`);
+  }
 }
 
 function toKebabCase(value: string): string {
-    return value
-        .toLowerCase()
-        .replace(/([a-z])([A-Z])/g, "$1-$2")
-        .replace(/[\s_]+/g, '-');
+  return value
+    .toLowerCase()
+    .replace(/([a-z])([A-Z])/g, '$1-$2')
+    .replace(/[\s_]+/g, '-');
 }

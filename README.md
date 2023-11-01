@@ -3,31 +3,35 @@
 
 Powered by <a href="https://github.com/evanw/esbuild"><img src="https://esbuild.github.io/favicon.svg" alt="esbuild" style="max-width: 18px;"/></a>
 
+![lint](https://github.com/Mochi-Team/cli/actions/workflows/lint/badge.svg)
+![ci](https://github.com/Mochi-Team/cli/actions/workflows/ci/badge.svg)
+![cd](https://github.com/Mochi-Team/cli/actions/workflows/cd/badge.svg)
+
 ## Installation
 
 For pnpm:
-```
+```bash
 pnpm add -g @mochi/cli
 ```
 
 For npm:
-```
+```bash
 npm install -g @mochi/cli
 ```
 
 ## Usage
 ```
-A CLI tool used to build and bundle Mochi modules.
+A cli tool used to build and bundle Mochi modules.
 
 Options:
-  -V, --version                           output the version number
-  -h, --help                              display help for command
+  -V, --version     output the version number
+  -h, --help        display help for command
 
 Commands:
-  check [source]                          checks for errors in repository
-  bundle [options] [source] [output]      bundles modules into a repository
-  serve [options] [source] [destination]  bundle and start local server for testing modules
-  help [command]                          display help for command
+  check [options]   checks for errors in repository
+  bundle [options]  bundles modules into a repository
+  serve [options]   bundle and start local server for testing modules
+  help [command]    display help for command
 ```
 
 ## License
