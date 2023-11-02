@@ -9,16 +9,13 @@ import consola from 'consola';
 
 const program = new Command();
 
-program
-  .name('mochi-cli')
-  .version(version)
-  .description(description);
+program.name('mochi-cli').version(version).description(description);
 
 program
   .command('check')
   .description('checks for errors in repository')
   .option('--dir <DIR>', 'repository path', '.')
-  .action(options => handleCheck(options?.dir).catch(writeErrorToConsola));
+  .action((options) => handleCheck(options?.dir).catch(writeErrorToConsola));
 
 program
   .command('bundle')
@@ -26,7 +23,7 @@ program
   .option('--dir <DIR>', 'repository path', '.')
   .option('--out <OUT>', 'path to store the bundle', './dist')
   .option('-s, --site', 'generate static site', false)
-  .action(options => handleBundle(options.dir, options.out, options.site).catch(writeErrorToConsola));
+  .action((options) => handleBundle(options.dir, options.out, options.site).catch(writeErrorToConsola));
 
 program
   .command('serve')
@@ -36,7 +33,9 @@ program
   .option('--port <PORT>', 'the server port', '10443')
   .option('-s, --site', 'generate static site', false)
   .option('-w, --watch', 'watch repository changes and rebuild', false)
-  .action(options => handleServe(options.dir, options.out, options.site, options.watch, options.port).catch(writeErrorToConsola));
+  .action((options) =>
+    handleServe(options.dir, options.out, options.site, options.watch, options.port).catch(writeErrorToConsola),
+  );
 
 program.parse(process.argv);
 
