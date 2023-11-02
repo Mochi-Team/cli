@@ -1,5 +1,6 @@
 {
   "name": "@mochi/cli",
+  "author": "ErrorErroError",
   "version": "0.0.1",
   "description": "A cli tool used to build and bundle Mochi modules.",
   "keywords": [
@@ -7,6 +8,7 @@
   ],
   "repository": "https://github.com/Mochi-Team/cli",
   "homepage": "https://github.com/Mochi-Team/cli",
+  "license": "MIT",
   "main": "dist/index.js",
   "bin": {
     "mochi-cli": "dist/index.js"
@@ -35,8 +37,9 @@
   "scripts": {
     "lint": "eslint src/**/*.ts",
     "lint:fix": "eslint src/**/*.ts --fix",
-    "format": "prettier --ignore-path .gitignore src/**/*.ts --write",
-    "build": "tsc && cp -r src/templates dist/src"
+    "format": "prettier -w --ignore-path .gitignore src/**/*.ts",
+    "build": "tsc && cp -r src/templates dist/src",
+    "watch": "tsc --watch"
   },
   "husky": {
     "hooks": {
