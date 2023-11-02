@@ -40,6 +40,5 @@ program
 program.parse(process.argv);
 
 function writeErrorToConsola(error: any) {
-  // consola.log('');
   consola.error(error);
 }
