@@ -18,6 +18,7 @@ jobs:
       - run: corepack prepare pnpm@latest --activate
       - run: pnpm install
       - run: pnpm build
-      - run: pnpm publish
+      - run: pnpm publish --provenance --access --no-git-checks
         env: 
           NODE_AUTH_TOKEN: ${{secrets.NPM_MOCHI_TOKEN}}
+          NPM_TOKEN: ${{secrets.NPM_MOCHI_TOKEN}}
