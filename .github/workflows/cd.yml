@@ -25,6 +25,11 @@ jobs:
         with:
           ref: 'dev'
 
+      - name: Setup GitHub Bot
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+
       - name: Use Node.js
         uses: actions/setup-node@v3
         with:
@@ -47,7 +52,7 @@ jobs:
       - name: Commit Version
         run: |
           git add package.json
-          git commit -m "chore(release): ${TAG_NAME}"
+          git commit -m "chore(release): v${TAG_NAME}"
 
       - run: pnpm publish --provenance --access public --publish-branch dev
         env: 
@@ -56,12 +61,3 @@ jobs:
 
       - name: Push latest commit to github
         run: git push origin dev
-
-      - name: Update GitHub Release Hash
-        run: |
-          gh api \
-            --method PATCH \
-            -H "Accept: application/vnd.github+json" \
-            -H "X-GitHub-Api-Version: 2022-11-28" \
-            /repos/Mochi-Team/cli/releases/${{ github.event.release.id }} \
-          -f target_commitish='dev'
