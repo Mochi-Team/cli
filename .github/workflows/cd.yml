@@ -1,17 +1,24 @@
 name: cd
 
-on: 
+on:
   release:
     types: [published]
 
 jobs:
-  build:
+  # run-checks:
+  #   name: Run Checks
+  #   uses: ./.github/workflows/ci.yml
+
+  publish:
+    if: ${{ !github.event.release.draft }}
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
       id-token: write
+      packages: write
     env: 
       HUSKY: 0
+      TAG_NAME: ${{ github.event.release.tag_name }}
 
     steps:
       - uses: actions/checkout@v4
@@ -21,13 +28,40 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v3
         with:
+          registry-url: https://registry.npmjs.org/
           node-version: '20.x'
 
       - run: corepack enable
       - run: corepack prepare pnpm@latest --activate
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm build
-      - run: pnpm publish --tag latest --provenance --access public --publish-branch dev
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm build
+
+      - name: Set Version
+        run:
+          pnpm version ${TAG_NAME} --no-git-tag-version
+
+      - name: Commit Version
+        run: |
+          git add package.json
+          git commit -m "chore(release): ${TAG_NAME}"
+
+      - run: pnpm publish --provenance --access public --publish-branch dev
         env: 
           NODE_AUTH_TOKEN: ${{secrets.NPM_MOCHI_TOKEN}}
           NPM_TOKEN: ${{secrets.NPM_MOCHI_TOKEN}}
+
+      - name: Push latest commit to github
+        run: git push origin dev
+
+      - name: Update GitHub Release Hash
+        run: |
+          gh api \
+            --method PATCH \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            /repos/Mochi-Team/cli/releases/${{ github.event.release.id }} \
+          -f target_commitish='dev'
