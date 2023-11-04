@@ -1,7 +1,7 @@
-# @mochi/cli
+# @mochiapp/cli
 > An easy-to-use CLI for compiling and bundling [Mochi](https://github.com/Mochi-Team/mochi) modules.
 
-![npm (scoped)](https://img.shields.io/npm/v/%40mochi/cli)
+![npm (scoped)](https://img.shields.io/npm/v/%40mochiapp/cli)
 ![lint](https://github.com/Mochi-Team/cli/actions/workflows/lint.yml/badge.svg)
 ![ci](https://github.com/Mochi-Team/cli/actions/workflows/ci.yml/badge.svg)
 ![cd](https://github.com/Mochi-Team/cli/actions/workflows/cd.yml/badge.svg)
@@ -12,17 +12,17 @@ Powered by <a href="https://github.com/evanw/esbuild"><img style="height: 1rem; 
 
 For pnpm:
 ```bash
-pnpm add -g @mochi/cli
+pnpm add -g @mochiapp/cli
 ```
 
 For npm:
 ```bash
-npm install -g @mochi/cli
+npm install -g @mochiapp/cli
 ```
 
 For yarn:
 ```bash
-yarn global add @mochi/cli
+yarn global add @mochiapp/cli
 ```
 
 ## Usage
@@ -39,6 +39,10 @@ Commands:
   serve [options]   bundle and start local server for testing modules
   help [command]    display help for command
 ```
+
+## Contribute
+
+You must use [pnpm](https://pnpm.io/) in order to make any changes. Once you've made changes, submit a pull request. Any contributions are welcome and appreciated :D
 
 ## License
 Licenced under [MIT](LICENSE).

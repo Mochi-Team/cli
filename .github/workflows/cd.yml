@@ -33,7 +33,6 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v3
         with:
-          registry-url: https://registry.npmjs.org/
           node-version: '20.x'
 
       - run: corepack enable
@@ -59,5 +58,5 @@ jobs:
           NODE_AUTH_TOKEN: ${{secrets.NPM_MOCHI_TOKEN}}
           NPM_TOKEN: ${{secrets.NPM_MOCHI_TOKEN}}
 
-      - name: Push latest commit to github
+      - name: Push latest version bump to GitHub
         run: git push origin dev
