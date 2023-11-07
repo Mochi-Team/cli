@@ -39,7 +39,7 @@
     "lint": "eslint src/**/*.ts",
     "lint:fix": "eslint src/**/*.ts --fix",
     "format": "prettier -w --ignore-path .gitignore src/**/*.ts",
-    "build": "tsc && cp -r src/templates dist/src",
+    "build": "rm -rf dist && tsc && cp -r src/templates dist/src",
     "watch": "tsc --watch"
   },
   "lint-staged": {

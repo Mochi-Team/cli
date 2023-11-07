@@ -8,10 +8,12 @@ import ejs from 'ejs';
 import ts from 'typescript';
 import esbuild from 'esbuild';
 
+const MOCHI_JS_NAME = '@mochiapp/js';
+
 const getModulesDirectories = async (basedir: string, log: boolean = true) => {
   consola.log('');
   consola.info(`Verifying ${basedir}`);
-  let directories = await readdir(path.join(basedir, 'src'), { withFileTypes: true });
+  const directories = await readdir(path.join(basedir, 'src'), { withFileTypes: true });
 
   const allModules = await Promise.all(
     directories.map((f) =>
@@ -20,14 +22,17 @@ const getModulesDirectories = async (basedir: string, log: boolean = true) => {
           if (s.isFile()) {
             if (log)
               consola.log(
-                `   \x1b[32m\u21B3\x1b[0m ${path.relative(basedir, path.join(f.path, f.name))}/index.ts - module found!`,
+                `   \x1b[32m\u21B3\x1b[0m ${path.relative(
+                  basedir,
+                  path.join(f.path, f.name),
+                )}/index.ts - module found!`,
               );
             return f;
           }
           throw new Error(''); // stub
         })
-        .then((_) => f)
-        .catch((_) => {
+        .then(() => f)
+        .catch(() => {
           if (log)
             consola.log(
               `   \x1b[33m\u26A0\x1b[0m ${path.relative(
@@ -49,17 +54,21 @@ const getModulesDirectories = async (basedir: string, log: boolean = true) => {
 const retrieveMochiJSVersion = async (src: string) => {
   consola.log('');
 
-  const version = await readFile(path.resolve(src, 'node_modules', '@mochi', 'js', 'package.json'), { encoding: 'utf-8' })
-  .catch((e) => { throw Error(`Failed to retrieve @mochi/js version - ${e}`)})
-  .then((value) => JSON.parse(value))
-  .then((json?: { version?: string }) => {
-    if (json?.version) return json.version;
-    throw Error(`could not parse @mochi/js version in node_modules/@mochi/js/package.json`);
-  });
+  const version = await readFile(path.resolve(src, 'node_modules', MOCHI_JS_NAME, 'package.json'), {
+    encoding: 'utf-8',
+  })
+    .catch((e) => {
+      throw Error(`Failed to retrieve ${MOCHI_JS_NAME} version - ${e}`);
+    })
+    .then((value) => JSON.parse(value))
+    .then((json?: { version?: string }) => {
+      if (json?.version) return json.version;
+      throw Error(`could not parse ${MOCHI_JS_NAME} version in node_modules/${MOCHI_JS_NAME}/package.json`);
+    });
 
-  consola.info(`found @mochi/js version: ${version}`);
-  return version
-}
+  consola.info(`found ${MOCHI_JS_NAME} version: ${version}`);
+  return version;
+};
 
 function toKebabCase(value: string): string {
   return value
@@ -128,8 +137,8 @@ export const pluginTypeCheck = (src: string) =>
             if (object.config?.compilerOptions) return object.config.compilerOptions as ts.CompilerOptions;
             throw new Error(`failed to parse ${tsConfigFilePath}.\n\n${object.error}`);
           })
-          .catch((_e) => {
-            consola.warn(`an error occurred parsing tsconfig.json, using default tsconfig instead`);
+          .catch((e) => {
+            consola.warn(`an error occurred parsing tsconfig.json, using default tsconfig instead. error log: ${e}`);
             return {} as ts.CompilerOptions;
           })
           .then((o) => {
@@ -176,7 +185,7 @@ export const pluginBundle = (options: BundleOption, mochiJSVersion: string) =>
         consola.log('');
         consola.start('Bundling repository...');
 
-        let releases: any[] = [];
+        const releases: any[] = [];
         let repositoryMetadata: any | undefined;
 
         const DEST_MODULES_PATH = path.resolve(options.outdir, 'modules');
@@ -194,7 +203,9 @@ export const pluginBundle = (options: BundleOption, mochiJSVersion: string) =>
             if (metadata) {
               repositoryMetadata = metadata;
             } else {
-              throw new Error(`failed to retrieve metadata content for ${fileNameWExt}. Make sure this repository's index.ts exports \`RepoMetadata\` by default.`);
+              throw new Error(
+                `failed to retrieve metadata content for ${fileNameWExt}. Make sure this repository's index.ts exports \`RepoMetadata\` by default.`,
+              );
             }
           } else {
             const metadata = vm.runInNewContext(`${output.text}; new source.default().metadata`);
@@ -205,7 +216,9 @@ export const pluginBundle = (options: BundleOption, mochiJSVersion: string) =>
               metadata.mochiJSVersion = mochiJSVersion;
               releases.push(metadata);
             } else {
-              throw new Error(`failed to retrieve metadata content from ${fileNameWExt}. Make sure the module class is exported by default and extends \`MetaModule\`.`);
+              throw new Error(
+                `failed to retrieve metadata content from ${fileNameWExt}. Make sure the module class is exported by default and extends \`MetaModule\`.`,
+              );
             }
           }
         }
@@ -290,11 +303,11 @@ function transformDiagnostic(basedir: string, diagnostic: ts.Diagnostic): esbuil
 }
 
 async function logDiagnostics(basedir: string, diagnostics: ts.Diagnostic[]) {
-  let errors = diagnostics
+  const errors = diagnostics
     .filter((d) => d.category == ts.DiagnosticCategory.Error)
     .map((d) => transformDiagnostic(basedir, d));
 
-  let warnings = diagnostics
+  const warnings = diagnostics
     .filter((d) => d.category != ts.DiagnosticCategory.Error)
     .map((d) => transformDiagnostic(basedir, d));
 
