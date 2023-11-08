@@ -1,12 +1,18 @@
 name: ci
 
-on: [workflow_dispatch]
+on: 
+  push:
+    branches:
+      - '*'
+  pull_request:
+    types: [review_requested]
+
+env: 
+  HUSKY: 0
 
 jobs:
   test:
     runs-on: ubuntu-latest
-    env: 
-      HUSKY: 0
 
     steps:
       - uses: actions/checkout@v4
@@ -16,5 +22,5 @@ jobs:
           node-version: '20.x'
       - run: corepack enable
       - run: corepack prepare pnpm@latest --activate
-      - run: pnpm install
+      - run: pnpm install --frozen-lockfile
       - run: pnpm test
