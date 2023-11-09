@@ -133,9 +133,10 @@ export const pluginTypeCheck = (src: string) =>
         const tsConfigFilePath = build.initialOptions.tsconfig!;
         const configOptions: ts.CompilerOptions = await readFile(tsConfigFilePath, { encoding: 'utf8' })
           .then((tsConfigString) => ts.parseConfigFileTextToJson(tsConfigFilePath, tsConfigString))
+          .then((tsConfigJSON) => ts.parseJsonConfigFileContent(tsConfigJSON.config, ts.sys, src))
           .then((object) => {
-            if (object.config?.compilerOptions) return object.config.compilerOptions as ts.CompilerOptions;
-            throw new Error(`failed to parse ${tsConfigFilePath}.\n\n${object.error}`);
+            if (object.options) return object.options as ts.CompilerOptions;
+            throw new Error(`failed to parse ${tsConfigFilePath}.`);
           })
           .catch((e) => {
             consola.warn(`an error occurred parsing tsconfig.json, using default tsconfig instead. error log: ${e}`);
@@ -144,10 +145,6 @@ export const pluginTypeCheck = (src: string) =>
           .then((o) => {
             // We do not want to emit any files from ts to js.
             o.noEmit = true;
-            o.strict = true;
-            o.esModuleInterop = true;
-            o.moduleResolution = ts.ModuleResolutionKind.NodeJs;
-            o.isolatedModules = true;
             return o;
           });
 
