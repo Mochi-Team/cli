@@ -89,7 +89,7 @@ export type BundleOption = {
   outdir: string;
   bundle?: boolean;
   site?: boolean;
-  watching?: boolean;
+  serve?: boolean;
 };
 
 export const buildOptions = async (basedir: string, outOptions?: BundleOption, typecheck: boolean = true) => {
@@ -105,7 +105,9 @@ export const buildOptions = async (basedir: string, outOptions?: BundleOption, t
 
   const plugins: esbuild.Plugin[] = [];
 
-  if (typecheck) plugins.push(pluginTypeCheck(basedir));
+  // FIXME: right now typecheck is ignored for fast development.
+  // Maybe cached last modified file to avoid slowdowns?
+  if (typecheck && !(outOptions?.serve ?? false)) plugins.push(pluginTypeCheck(basedir));
   if (outOptions) plugins.push(pluginBundle(outOptions, mochiJSVesion));
 
   return <esbuild.BuildOptions>{

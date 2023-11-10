@@ -14,7 +14,7 @@ export default async function handleServe(
   dir = path.resolve(process.cwd(), dir);
   dest = path.resolve(process.cwd(), dest);
 
-  const options = await buildOptions(dir, { outdir: dest, site: site, watching: true });
+  const options = await buildOptions(dir, { outdir: dest, site: site, serve: true });
   const ctx = await esbuild.context(options);
 
   if (watch) {
