@@ -118,7 +118,7 @@ export const buildOptions = async (basedir: string, outOptions?: BundleOption, t
     outdir: path.resolve(outOptions?.outdir ?? path.resolve(basedir, 'dist'), 'modules'),
     write: false,
     plugins: plugins,
-    minify: true,
+    minify: !(outOptions?.serve ?? false),
     tsconfig: path.resolve(basedir, 'tsconfig.json'),
     absWorkingDir: basedir,
   };
@@ -209,14 +209,14 @@ export const pluginBundle = (options: BundleOption, mochiJSVersion: string) =>
           } else {
             const metadata = vm.runInNewContext(`${output.text}; new source.default().metadata`);
             if (metadata) {
-              metadata.id = `${toKebabCase(metadata.name)}`;
+              metadata.id = metadata.id ?? `${toKebabCase(metadata.name)}`;
               metadata.file = `/modules/${fileNameWExt}`;
               metadata.meta = []; // TODO: gather if it has video, image, or source
               metadata.mochiJSVersion = mochiJSVersion;
               releases.push(metadata);
             } else {
               throw new Error(
-                `failed to retrieve metadata content from ${fileNameWExt}. Make sure the module class is exported by default and extends \`MetaModule\`.`,
+                `failed to retrieve metadata content from ${fileNameWExt}. Make sure the module class is exported by default and extends \`SourceModule\` or \`TrackerModule\`.`,
               );
             }
           }
