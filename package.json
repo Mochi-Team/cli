@@ -14,7 +14,6 @@
     "mochi-cli": "dist/src/index.js"
   },
   "devDependencies": {
-    "@commander-js/extra-typings": "^11.1.0",
     "@types/chai": "^4.3.10",
     "@types/ejs": "^3.1.4",
     "@types/mocha": "^10.0.4",
@@ -34,6 +33,7 @@
     "ts-node": "^10.9.1"
   },
   "dependencies": {
+    "@commander-js/extra-typings": "^11.1.0",
     "commander": "^11.1.0",
     "consola": "^3.2.3",
     "ejs": "^3.1.9",
