@@ -12,16 +12,28 @@ Powered by <a href="https://github.com/evanw/esbuild"><img style="height: 1rem; 
 
 For pnpm:
 ```bash
+# Local cli
+pnpm add -D @mochiapp/cli
+
+# Or Global 
 pnpm add -g @mochiapp/cli
 ```
 
 For npm:
 ```bash
+# Local cli
+npm install --save-dev @mochiapp/cli
+
+# Or Global 
 npm install -g @mochiapp/cli
 ```
 
 For yarn:
 ```bash
+# Local cli
+yarn add -D @mochiapp/cli
+
+# Or Global 
 yarn global add @mochiapp/cli
 ```
 
@@ -34,6 +46,7 @@ Options:
   -h, --help        display help for command
 
 Commands:
+  init [options]    initalize a new module from template
   check [options]   checks for errors in repository
   bundle [options]  bundles modules into a repository
   serve [options]   bundle and start local server for testing modules

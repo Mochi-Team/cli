@@ -1,0 +1,33 @@
+import {
+  DiscoverListing,
+  Paging,
+  Playlist,
+  PlaylistDetails,
+  SearchFilter,
+  SearchQuery,
+  SourceModule
+} from "@mochiapp/js";
+
+export default class <%- className %> extends SourceModule {
+  metadata = {
+    name: "<%- displayName %>",
+    version: "0.0.1",
+  };
+
+  async searchFilter(): Promise<SearchFilter[]> {
+    throw new Error("Method not implemented.");
+  }
+
+  async search(query: SearchQuery): Promise<Paging<Playlist>> {
+    throw new Error("Method not implemented.");
+  }
+
+  async discoverListings(): Promise<DiscoverListing[]> {
+    throw new Error("Method not implemented.");
+  }
+
+  async playlistDetails(id: String): Promise<PlaylistDetails> {
+    throw new Error("Method not implemented.");
+  }
+}
+  

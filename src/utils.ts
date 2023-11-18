@@ -51,7 +51,7 @@ const getModulesDirectories = async (basedir: string, log: boolean = true) => {
   return allModules;
 };
 
-const retrieveMochiJSVersion = async (src: string) => {
+export const retrieveMochiJSVersion = async (src: string) => {
   consola.log('');
 
   const version = await readFile(path.resolve(src, 'node_modules', MOCHI_JS_NAME, 'package.json'), {

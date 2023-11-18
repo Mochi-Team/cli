@@ -2,20 +2,29 @@
 
 import { Command } from '@commander-js/extra-typings';
 import { version, description } from '../package.json';
+import consola from 'consola';
+
+import handleInit from './commands/init';
 import handleCheck from './commands/check';
 import handleBundle from './commands/bundle';
 import handleServe from './commands/serve';
-import consola from 'consola';
 
 const program = new Command();
 
 program.name('mochi-cli').version(version).description(description);
 
 program
+  .command('init')
+  .description('initalize a new module from template')
+  .requiredOption('--name <NAME>', 'name of the module')
+  .option('--dir <DIR>', 'repository path', '.')
+  .action((options) => handleInit(options.dir, options.name as string).catch(writeErrorToConsola));
+
+program
   .command('check')
   .description('checks for errors in repository')
   .option('--dir <DIR>', 'repository path', '.')
-  .action((options) => handleCheck(options?.dir).catch(writeErrorToConsola));
+  .action((options) => handleCheck(options.dir).catch(writeErrorToConsola));
 
 program
   .command('bundle')
