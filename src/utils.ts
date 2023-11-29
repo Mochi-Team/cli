@@ -70,7 +70,7 @@ export const retrieveMochiJSVersion = async (src: string) => {
   return version;
 };
 
-function toKebabCase(value: string): string {
+export function toKebabCase(value: string): string {
   return value
     .toLowerCase()
     .replace(/([a-z])([A-Z])/g, '$1-$2')

@@ -4,7 +4,7 @@ import { Command } from '@commander-js/extra-typings';
 import { version, description } from '../package.json';
 import consola from 'consola';
 
-import handleInit from './commands/init';
+import { handleInitModule, handleInitRepo } from './commands/init';
 import handleCheck from './commands/check';
 import handleBundle from './commands/bundle';
 import handleServe from './commands/serve';
@@ -13,12 +13,20 @@ const program = new Command();
 
 program.name('mochi-cli').version(version).description(description);
 
-program
-  .command('init')
-  .description('initalize a new module from template')
+const initCmd = program.command('init').description('initalize a new repo or module from template');
+
+initCmd
+  .command('module')
   .requiredOption('--name <NAME>', 'name of the module')
   .option('--dir <DIR>', 'repository path', '.')
-  .action((options) => handleInit(options.dir, options.name as string).catch(writeErrorToConsola));
+  .action((options) => handleInitModule(options.dir, options.name).catch(writeErrorToConsola));
+
+initCmd
+  .command('repo')
+  .requiredOption('--name <NAME>', 'name of the module')
+  .requiredOption('--author <Author>', 'author of the repo')
+  .option('--dir <DIR>', 'repository path', '.')
+  .action((options) => handleInitRepo(options.dir, options.name, options.author).catch(writeErrorToConsola));
 
 program
   .command('check')
