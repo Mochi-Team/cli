@@ -48,6 +48,8 @@ export async function handleInitRepo(dir: string, name: string, author: string) 
       }
     }
   }
+
+  consola.success(`Successfully created repo in ${dir}`);
 }
 
 export async function handleInitModule(dir: string, name: string) {
