@@ -2,7 +2,6 @@ import * as path from 'path';
 
 import vm from 'vm';
 import consola from 'consola';
-import { Dirent } from 'fs';
 import { rm, readFile, writeFile, mkdir, readdir, stat } from 'fs/promises';
 import ejs from 'ejs';
 import ts from 'typescript';
@@ -10,40 +9,38 @@ import esbuild from 'esbuild';
 
 const MOCHI_JS_NAME = '@mochiapp/js';
 
-const getModulesDirectories = async (basedir: string, log: boolean = true) => {
+type ModulePath = {
+  name: string;
+  path: string;
+};
+
+const getModulesDirectories = async (basedir: string, log: boolean = true): Promise<ModulePath[]> => {
   consola.log('');
   consola.info(`Verifying ${basedir}`);
-  const directories = await readdir(path.join(basedir, 'src'), { withFileTypes: true });
+  const directories = await readdir(path.join(basedir, 'src'));
 
-  const allModules = await Promise.all(
-    directories.map((f) =>
-      stat(path.join(f.path, f.name, 'index.ts'))
+  const allModules: ModulePath[] = await Promise.all(
+    directories.map((item) => {
+      const itemPath = path.join(basedir, 'src', item);
+      const itemIndexPath = path.join(itemPath, 'index.ts');
+      return stat(itemIndexPath)
         .then((s) => {
           if (s.isFile()) {
-            if (log)
-              consola.log(
-                `   \x1b[32m\u21B3\x1b[0m ${path.relative(
-                  basedir,
-                  path.join(f.path, f.name),
-                )}/index.ts - module found!`,
-              );
-            return f;
+            if (log) consola.log(`   \x1b[32m\u21B3\x1b[0m ${itemIndexPath} - module found!`);
+            return {
+              name: item,
+              path: itemPath,
+            } as ModulePath;
+          } else {
+            throw new Error(''); // stub
           }
-          throw new Error(''); // stub
         })
-        .then(() => f)
         .catch(() => {
-          if (log)
-            consola.log(
-              `   \x1b[33m\u26A0\x1b[0m ${path.relative(
-                basedir,
-                path.join(f.path, f.name),
-              )} - does not contain an index.ts file, skipping..`,
-            );
+          if (log) consola.log(`   \x1b[33m\u26A0\x1b[0m ${itemPath} - does not contain an index.ts file, skipping..`);
           return undefined;
-        }),
-    ),
-  ).then((l) => l.filter((d): d is Dirent => !!d));
+        });
+    }),
+  ).then((l) => l.filter((i): i is ModulePath => !!i));
 
   consola.log('');
   consola.info(`Found ${allModules.length} module${allModules.length == 1 ? '' : 's'}.`);
@@ -98,7 +95,7 @@ export const buildOptions = async (basedir: string, outOptions?: BundleOption, t
 
   const entryPoints = modulesDirs.map((d) => {
     return {
-      in: path.resolve(d.path, d.name, 'index.ts'),
+      in: path.resolve(d.path, 'index.ts'),
       out: d.name,
     };
   });

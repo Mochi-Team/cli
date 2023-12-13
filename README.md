@@ -8,6 +8,9 @@
 
 Powered by <a href="https://github.com/evanw/esbuild"><img style="height: 1rem; vertical-align: text-bottom;" src="https://esbuild.github.io/favicon.svg" alt="esbuild logo"/></a>
 
+## Requirements
+You must have [Node](https://nodejs.org) installed on your computer and the minimum version supported is `v16.x`.
+
 ## Installation
 
 For pnpm:
